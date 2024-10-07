@@ -30,6 +30,20 @@ class _TodoHomeState extends State<TodoHome> {
   final List<Task> tasks = [];
   final TextEditingController _taskController = TextEditingController();
 
+  void reorderTasks() {
+    setState(() {
+      tasks.sort((a, b) {
+        if (!a.isCompleted && b.isCompleted) {
+          return -1;
+        } else if (a.isCompleted && !b.isCompleted) {
+          return 1; 
+        } else {
+          return 0; 
+        }
+      });
+    });
+  }
+
   void addTask() {
     String taskText = _taskController.text.trim();
     if (taskText.isNotEmpty && !tasks.any((task) => task.title == taskText)) {
@@ -37,6 +51,7 @@ class _TodoHomeState extends State<TodoHome> {
         tasks.insert(0, Task(title: taskText));
       });
       _taskController.clear();
+      reorderTasks();
     }
   }
 
@@ -44,6 +59,7 @@ class _TodoHomeState extends State<TodoHome> {
     setState(() {
       tasks[index].isDeleting = true;
     });
+    
     Timer(Duration(seconds: 3), () {
       if (tasks[index].isDeleting) {
         setState(() {
@@ -63,16 +79,25 @@ class _TodoHomeState extends State<TodoHome> {
     setState(() {
       tasks[index].isCompleted = true;
       Task completedTask = tasks.removeAt(index);
-      tasks.add(completedTask);
+
+      int insertIndex = tasks.indexWhere((task) => task.isCompleted == true);
+      if (insertIndex == -1) {
+        tasks.add(completedTask);
+      } else {
+        tasks.insert(insertIndex, completedTask);
+      }
     });
+    reorderTasks();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Gerenciador de Tarefas'),
+        title: Text('ToDo List'),
+        backgroundColor: Color(0xFFEED4FA),
       ),
+      backgroundColor: Color(0xFFEED4FA),
       body: Column(
         children: [
           Padding(
@@ -85,6 +110,8 @@ class _TodoHomeState extends State<TodoHome> {
                     onSubmitted: (value) => addTask(),
                     decoration: InputDecoration(
                       border: OutlineInputBorder(),
+                      fillColor: Colors.white,
+                      filled: true,
                       labelText: 'Nova Tarefa',
                     ),
                   ),
@@ -93,6 +120,10 @@ class _TodoHomeState extends State<TodoHome> {
                 ElevatedButton(
                   onPressed: addTask,
                   child: Text('Incluir'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    )
                 ),
               ],
             ),
@@ -104,8 +135,8 @@ class _TodoHomeState extends State<TodoHome> {
                 final task = tasks[index];
                 return Dismissible(
                   key: UniqueKey(),
-                  background: Container(color: Colors.green),
-                  secondaryBackground: Container(color: Colors.red),
+                  background: Container(color: Color(0xFFD4FAE8)),
+                  secondaryBackground: Container(color: Color(0xFFFAA49D)),
                   onDismissed: (direction) {
                     if (direction == DismissDirection.startToEnd) {
                       completeTask(index);
@@ -114,7 +145,9 @@ class _TodoHomeState extends State<TodoHome> {
                     }
                   },
                   child: ListTile(
-                    tileColor: index % 2 == 0 ? Colors.grey[200] : Colors.white,
+                    tileColor: task.isDeleting
+                        ? Color(0xFFFAA49D)
+                        : (index % 2 == 0 ? Color(0xFFFAEDED) : Colors.white),
                     title: Text(
                       task.title,
                       style: TextStyle(
@@ -124,21 +157,24 @@ class _TodoHomeState extends State<TodoHome> {
                       ),
                     ),
                     trailing: task.isDeleting
-                        ? Row(
+                        ? TextButton(
+                            onPressed: () => undoDelete(index),
+                            child: Text('Desfazer'),
+                          )
+                        : Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text('Removendo...'),
-                              TextButton(
-                                onPressed: () => undoDelete(index),
-                                child: Text('Desfazer'),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => deleteTask(index),
+                              ),
+                              Checkbox(
+                                value: task.isCompleted,
+                                onChanged: (value) {
+                                  if (value == true) completeTask(index);
+                                },
                               ),
                             ],
-                          )
-                        : Checkbox(
-                            value: task.isCompleted,
-                            onChanged: (value) {
-                              if (value == true) completeTask(index);
-                            },
                           ),
                   ),
                 );
