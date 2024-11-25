@@ -63,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => HomeScreen(jwtToken: jwtToken, username: username),
+            builder: (context) => HomeScreen(jwtToken: jwtToken, username: username, userEmail: email),
           ),
         );
       } else {
@@ -678,8 +678,9 @@ class Sidebar extends StatelessWidget {
 class HomeScreen extends StatefulWidget {
   final String jwtToken;
   final String username;
+  final String userEmail;
 
-  HomeScreen({required this.jwtToken, required this.username});
+  HomeScreen({required this.jwtToken, required this.username, required this.userEmail});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -706,7 +707,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     Widget content;
     if (_currentScreen == 'tasks') {
-      content = TaskScreen(jwtToken: widget.jwtToken);
+      content = TodoHome(jwtToken: widget.jwtToken, username: widget.username, userEmail: widget.userEmail);
     } else {
       content = ChatScreen(jwtToken: widget.jwtToken, username: widget.username);
     }
