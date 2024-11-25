@@ -729,22 +729,62 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
-  final List<Map<String, String>> _messages = [];
-
+  List<Map<String, String>> _messages = [];
+  
+  void initState() {
+    super.initState();
+    getMessages();
+  }
+  
   void _sendMessage() {
     final text = _messageController.text.trim();
     if (text.isNotEmpty) {
       setState(() {
-        _messages.add({'sender': widget.username, 'message': text});
+        _messages.add({'papel': widget.username, 'conteudo': text});
       });
       _messageController.clear();
 
       // Simula recebimento da API
       Future.delayed(Duration(seconds: 1), () {
         setState(() {
-          _messages.add({'sender': 'API', 'message': 'Resposta à: $text'});
+          _messages.add({'papel': 'assistente', 'conteudo': 'Resposta à: $text'});
         });
       });
+    }
+  }
+
+  Future<void> getMessages() async {
+    final url = Uri.https('barra.cos.ufrj.br:443', '/rest/conversas');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.jwtToken}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        print(responseData);
+        if (!responseData.isEmpty) {
+          final messages = responseData[0]['mensagens'];
+          if (messages.isEmpty) {
+          setState(() {
+            _messages = [];
+          });
+          } else {
+            setState(() {
+              _messages = [{'papel': 'assistente', 'conteudo': 'Chat carregado com sucesso'}];
+            });
+          }
+        }
+      } else {
+        print('Erro ao carregar mensagens');
+      }
+    } catch (error) {
+      print('Erro: $error');
     }
   }
 
@@ -757,7 +797,7 @@ class _ChatScreenState extends State<ChatScreen> {
             itemCount: _messages.length,
             itemBuilder: (context, index) {
               final message = _messages[index];
-              final isUser = message['sender'] == widget.username;
+              final isUser = message['papel'] != "assistente";
               return Align(
                 alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
                 child: Container(
@@ -767,7 +807,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     color: isUser ? Colors.blue : Colors.grey,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(message['message']!,
+                  child: Text(message['conteudo']!,
                       style: TextStyle(color: Colors.white)),
                 ),
               );
