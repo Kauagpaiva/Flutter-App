@@ -705,6 +705,31 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_currentScreen == 'tasks') {
       content = TodoHome(jwtToken: widget.jwtToken, username: widget.username, userEmail: widget.userEmail);
     } else {
+      if (_currentScreen == 'new_chat') {
+        final url = Uri.https('barra.cos.ufrj.br:443', '/rpc/cria_conversa');
+
+        try {
+          final response = await http.post(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${widget.jwtToken}',
+            },
+          );
+
+          if (response.statusCode == 200) {
+            print("Novo chat criado com sucesso");
+              } else {
+                print("Erro ao criar novo chat: ", response.statusCode)
+              }
+            }
+          } else {
+            print('Erro ao criar novo chat');
+          }
+        } catch (error) {
+          print('Erro: $error');
+        }
+      }
       content = ChatScreen(jwtToken: widget.jwtToken, username: widget.username);
     }
 
