@@ -531,10 +531,6 @@ class _TodoHomeState extends State<TodoHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("${widget.username}'s ToDo List"),
-        backgroundColor: Color(0xFFEED4FA),
-      ),
       backgroundColor: Color(0xFFEED4FA),
       body: Column(
         children: [
