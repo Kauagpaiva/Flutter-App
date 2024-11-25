@@ -784,7 +784,11 @@ class _ChatScreenState extends State<ChatScreen> {
               Expanded(
                 child: TextField(
                   controller: _messageController,
-                  decoration: InputDecoration(hintText: 'Escreva sua mensagem'),
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    fillColor: Colors.white,
+                    filled: true,
+                    labelText: 'Digite sua mensagem'),
                 ),
               ),
               IconButton(
