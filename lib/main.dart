@@ -699,6 +699,28 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> createNewChat() async {
+    final url = Uri.https('barra.cos.ufrj.br:443', '/rest/rpc/cria_conversa');
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.jwtToken}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        print("Novo chat criado com sucesso");
+      } else {
+        print("Erro ao criar novo chat: ");
+        print(response.statusCode);
+      }
+    } catch (error) {
+      print('Erro: $error');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget content;
@@ -706,29 +728,7 @@ class _HomeScreenState extends State<HomeScreen> {
       content = TodoHome(jwtToken: widget.jwtToken, username: widget.username, userEmail: widget.userEmail);
     } else {
       if (_currentScreen == 'new_chat') {
-        final url = Uri.https('barra.cos.ufrj.br:443', '/rpc/cria_conversa');
-
-        try {
-          final response = await http.post(
-            url,
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ${widget.jwtToken}',
-            },
-          );
-
-          if (response.statusCode == 200) {
-            print("Novo chat criado com sucesso");
-              } else {
-                print("Erro ao criar novo chat: ", response.statusCode)
-              }
-            }
-          } else {
-            print('Erro ao criar novo chat');
-          }
-        } catch (error) {
-          print('Erro: $error');
-        }
+        createNewChat();
       }
       content = ChatScreen(jwtToken: widget.jwtToken, username: widget.username);
     }
