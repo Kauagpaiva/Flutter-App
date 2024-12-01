@@ -721,6 +721,32 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> getChats() async {
+    final url = Uri.https('barra.cos.ufrj.br:443', '/rest/conversas');
+
+    try {
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ${widget.jwtToken}',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body);
+        // get chatid
+        // get messages
+      } else {
+        print('Erro ao carregar mensagens');
+      }
+    } catch (error) {
+      print('Erro: $error');
+    }
+  }
+
+  
+
   @override
   Widget build(BuildContext context) {
     Widget content;
@@ -729,8 +755,11 @@ class _HomeScreenState extends State<HomeScreen> {
     } else {
       if (_currentScreen == 'new_chat') {
         createNewChat();
+        
       }
+      // add a get chats to get the new chat id
       content = ChatScreen(jwtToken: widget.jwtToken, username: widget.username);
+      
     }
 
     return Scaffold(
